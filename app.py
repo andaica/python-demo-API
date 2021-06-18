@@ -13,8 +13,8 @@ userController = UserController(myDB)
 @app.route('/')
 def home(): return 'Hello Page!'
 
-@app.route('/user/all', methods=['GET'])
-def userAll(): return wrapResp(userController.all)
+@app.route('/user/list', methods=['GET'])
+def userList(): return wrapResp(userController.list)
 
 @app.route('/user/detail', methods=['GET'])
 def userDetail(): return wrapResp(userController.detail)

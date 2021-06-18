@@ -12,6 +12,7 @@ class DB:
         self.cursor = self.connect.cursor(dictionary=True)
 
     def select(self, query):
+        print("query: ", query)
         self.cursor.execute(query)
         result = self.cursor.fetchall()
         return result
@@ -24,7 +25,7 @@ class DB:
         sql = "INSERT INTO {} ({}) VALUES ({})".format(table, fieldlist, fieldmarks)
         val = tuple(record.values())
 
-        print("insert: ", sql, val)
+        print("query: ", sql, val)
         self.cursor.execute(sql, val)
         self.connect.commit()
 
@@ -39,7 +40,7 @@ class DB:
         sql = "INSERT INTO {} ({}) VALUES ({})".format(table, fieldlist, fieldmarks)
         val = [tuple(record.values()) for record in records]
 
-        print("insert: ", sql, val)
+        print("query: ", sql, val)
         self.cursor.executemany(sql, val)
         self.connect.commit()
 
@@ -55,7 +56,7 @@ class DB:
         setclause = ", ".join([ format(x, set[x]) for x in set ])
         sql = "UPDATE {} SET {} WHERE {}".format(table, setclause, whereclause)
         
-        print("update: ", sql)
+        print("query: ", sql)
         self.cursor.execute(sql)
         self.connect.commit()
 

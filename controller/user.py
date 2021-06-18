@@ -1,55 +1,67 @@
-from controller.base import BaseControler
+from repo.user import UserRepo
 from flask import request
 
-class UserController(BaseControler):
-    def all(self):
-        users = self.db.select("SELECT * FROM user")
+class UserController():
+    def __init__(self, db):
+        self.repo = UserRepo(db)
+    
+    def list(self):
+        limit = int(request.args['limit']) if 'limit' in request.args else 20
+        page = int(request.args['page']) if 'page' in request.args else 1
+        if limit < 0 or page < 0: raise Exception("params invalid")
+        if page == 0: page = 1
+
+        users = self.repo.listUser(limit, page)
         return users
 
     def detail(self):
         if 'id' in request.args:
             id = int(request.args['id'])
         else:
-            raise Exception("id not exists")
+            raise Exception("param id invalid")
 
-        users = self.db.select("SELECT * FROM user WHERE id = " + str(id))
-        return users
+        user = self.repo.getUserById(id)
+        if user is None:
+            raise Exception("user not exists")
+        else:
+            return user
 
     def create(self):
         data = request.get_json()
         print("data received: ", data)
-        user = {
-            "username": data['name'],
-            "email": data['email'],
-            "password": data['password'],
-            "number": data['number']
-        }
-        inserted = self.db.insertone("user", user)
-        print(inserted, "records inserted.")
-        return inserted
+        
+        isOk = self.repo.createUser(data)
+        if isOk:
+            return True
+        else:
+            raise Exception("create user failed")
     
     def update(self):
         data = request.get_json()
         print("data received: ", data)
-        if "id" not in data: raise Exception("id not exists")
+        if "id" not in data: raise Exception("param id not exists")
 
-        user = {}
-        if "name" in data: user["username"] = data["name"]
-        if "email" in data: user["email"] = data["email"]
-        if "password" in data: user["password"] = data["password"]
-        if "bio" in data: user["bio"] = data["bio"]
-        if "image" in data: user["image"] = data["image"]
-        if "number" in data: user["number"] = data["number"]
-
-        updated = self.db.update("user", user, "id = {}".format(data['id']))
-        print(updated, "records updated.")
-        return updated
+        user = self.repo.getUserById(data['id'])
+        if user is None:
+            raise Exception("user not exists")
+        
+        isOk = self.repo.updateUser(data)
+        if isOk:
+            return True
+        else:
+            raise Exception("update user failed")
     
     def delete(self):
         data = request.get_json()
         print("data received: ", data)
-        if "id" not in data: raise Exception("id not exists")
+        if "id" not in data: raise Exception("param id not exists")
 
-        deleted = self.db.update("user", { "deleted": 1 }, "id = {}".format(data['id']))
-        print(deleted, "records deleted.")
-        return deleted
+        user = self.repo.getUserById(data['id'])
+        if user is None:
+            raise Exception("user not exists")
+
+        isOk = self.repo.deleteUser(data['id'])
+        if isOk:
+            return True
+        else:
+            raise Exception("delete user failed")
